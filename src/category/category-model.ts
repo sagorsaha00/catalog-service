@@ -1,66 +1,67 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 interface priceConfiguration {
-   [key: string]: {
-      priceType: 'base' | 'aditional'
-      availableOptions: string[]
-   }
+  [key: string]: {
+    priceType: "base" | "aditional";
+    availableOptions: string[];
+  };
 }
 interface Attributes {
-   name: string
-   widgetType: 'switch' | 'radio'
-   defaultValue: string
-   availableOptions: string[]
+  name: string;
+  widgetType: "switch" | "radio";
+  defaultValue: string;
+  availableOptions: string[];
 }
 export interface Category {
-   name: string
-   priceConfiguration: priceConfiguration
-   attributes: Attributes[]
+  name: string;
+  priceConfiguration: priceConfiguration;
+  attributes: Attributes[];
 }
 
 const priceConfigurationSchema = new mongoose.Schema<priceConfiguration>({
-   priceType: {
-      type: String,
-      enum: ['base', 'aditional'],
-      required: true,
-   },
-   availableOptions: {
-      type: [String],
-      required: true,
-   },
-})
+  priceType: {
+    type: String,
+    enum: ["base", "aditional"],
+    required: true,
+  },
+  availableOptions: {
+    type: [String],
+    required: true,
+  },
+});
 const AttributesSchema = new mongoose.Schema<Attributes>({
-   name: {
-      type: String,
-      required: true,
-   },
-   widgetType: {
-      type: String,
-      enum: ['switch', 'radio'],
-      required: true,
-   },
-   defaultValue: {
-      type: mongoose.Schema.Types.Mixed,
-      required: true,
-   },
-   availableOptions: {
-      type: [String],
-      required: true,
-   },
-})
+  name: {
+    type: String,
+    required: true,
+  },
+  widgetType: {
+    type: String,
+    enum: ["switch", "radio"],
+    required: true,
+  },
+  defaultValue: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+  },
+  availableOptions: {
+    type: [String],
+    required: true,
+  },
+});
 
 export const CategorySchema = new mongoose.Schema<Category>({
-   name: {
-      type: String,
-      required: true,
-   },
-   priceConfiguration: {
-      type: Map,
-      of: priceConfigurationSchema,
-      required: true,
-   },
-   attributes: {
-      type: [AttributesSchema],
-      required: true,
-   },
-})
+  name: {
+    type: String,
+    required: true,
+  },
+  priceConfiguration: {
+    type: Map,
+    of: priceConfigurationSchema,
+    required: true,
+  },
+  attributes: {
+    type: [AttributesSchema],
+    required: true,
+  },
+});
+export default mongoose.model("Category", CategorySchema);

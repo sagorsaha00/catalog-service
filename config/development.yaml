@@ -1,0 +1,6 @@
+server:
+  port: 5502
+  host: localhost
+
+database:
+  url: mongodb://root:root@localhost:27017/mydatabase?authSource=admin
