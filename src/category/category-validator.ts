@@ -18,6 +18,7 @@ export default [
           `${value} is invalid for priceType filed, Possible Value are : [${validKeys.join()}] `
         );
       }
+      return true;
     }),
   body("attributes").exists().withMessage("attrebuties shoud be requried"),
 ];
