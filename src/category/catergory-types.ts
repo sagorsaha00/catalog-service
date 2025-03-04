@@ -1,9 +1,9 @@
 export interface priceConfiguration {
-    [key: string]: {
-      priceType: "base" | "aditional";
-      availableOptions: string[];
-    };
-  }
+  [key: string]: {
+    priceType: "base" | "aditional";
+    availableOptions: string[];
+  };
+}
 export interface Attributes {
   name: string;
   widgetType: "switch" | "radio";

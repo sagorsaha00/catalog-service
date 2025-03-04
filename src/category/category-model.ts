@@ -33,6 +33,7 @@ const AttributesSchema = new mongoose.Schema<Attributes>({
 });
 
 export const CategorySchema = new mongoose.Schema<Category>({
+   
   name: {
     type: String,
     required: true,

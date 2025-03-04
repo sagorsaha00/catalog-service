@@ -4,6 +4,7 @@ import { CategoryService } from "./category-services";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { Logger } from "winston";
+import mongoose from "mongoose";
 
 export class CategoryController {
   constructor(
@@ -12,7 +13,7 @@ export class CategoryController {
   ) {}
   async create(request: Request, response: Response, next: NextFunction) {
     const result = validationResult(request);
-    console.log("result", result);
+
     if (!result.isEmpty()) {
       next(createHttpError(400, result.array()[0].msg as string));
       return;
@@ -24,13 +25,126 @@ export class CategoryController {
       priceConfiguration,
       attributes,
     });
-    // console.log('logger',this.logger.info('data save', {id: categorycreatedata.id} ));
+
+    // console.log('logger',this.logger.info('data save',));
 
     if (categorycreatedata) {
-      response.json({ id: categorycreatedata.id });
+      response.json({ id: categorycreatedata?.id });
     } else {
       // handle the case where categorycreatedata is undefined
       response.status(500).json({ error: "Failed to create category" });
     }
+  }
+
+  async update(request: Request, response: Response, next: NextFunction) {
+    const result = validationResult(request);
+
+    if (!result.isEmpty()) {
+      next(createHttpError(400, result.array()[0].msg as string));
+      return;
+    }
+
+    const catagoriesId = request.params.id?.trim();
+
+    const { name, priceConfiguration, attributes } = request.body as Category;
+    const objectId = new mongoose.Types.ObjectId(catagoriesId);
+    await this.categoryService.update(objectId, {
+      name,
+      priceConfiguration,
+      attributes,
+    });
+
+    // console.log('logger',this.logger.info('data save',));
+
+    return response
+      .status(200)
+      .json({ message: "update successfully", id: catagoriesId });
+  }
+  async getCategoriedId(
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) {
+    const result = validationResult(request);
+
+    if (!result.isEmpty()) {
+      return next(createHttpError(400, result.array()[0].msg as string));
+    }
+
+    const categoriesId = request.params.id?.trim(); // ✅ Trim spaces
+    console.log("Received ID:", categoriesId, "Length:", categoriesId.length);
+
+    // ✅ Validate ObjectId format before querying
+    if (
+      !categoriesId ||
+      typeof categoriesId !== "string" ||
+      categoriesId.length !== 24 ||
+      !mongoose.Types.ObjectId.isValid(categoriesId)
+    ) {
+      return next(
+        createHttpError(400, `Invalid category ID format: ${categoriesId}`)
+      );
+    }
+
+    try {
+      // ✅ Convert to ObjectId safely
+      const objectId = new mongoose.Types.ObjectId(categoriesId);
+
+      const category = await this.categoryService.findByid(objectId);
+
+      if (!category) {
+        return next(createHttpError(404, "Category not found"));
+      }
+
+      return response.status(200).json({
+        message: "Fetched successfully",
+        id: categoriesId,
+        category,
+      });
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      return next(createHttpError(500, "Server error"));
+    }
+  }
+  async getAllCategories(
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) {
+    try {
+      const categories = await this.categoryService.findAll(); // ✅ Fetch all categories
+
+      return response.status(200).json({
+        message: "Fetched successfully",
+        total: categories.length, // ✅ Count total categories
+        categories,
+      });
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return next(createHttpError(500, "Server error"));
+    }
+  }
+  async distroyCategories(
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) {
+    const result = validationResult(request);
+
+    if (!result.isEmpty()) {
+      next(createHttpError(400, result.array()[0].msg as string));
+      return;
+    }
+
+    const catagoriesId = request.params.id?.trim();
+
+    const objectId = new mongoose.Types.ObjectId(catagoriesId);
+    await this.categoryService.deletCategoiresId(objectId);
+
+    // console.log('logger',this.logger.info('data save',));
+
+    return response
+      .status(200)
+      .json({ message: "delete successfully", id: catagoriesId });
   }
 }

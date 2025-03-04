@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 export const initDb = async () => {
   try {
     const dbUrl: string = config.get("database.url");
-    console.log("Database URL:", dbUrl);
 
     await mongoose.connect(dbUrl);
 

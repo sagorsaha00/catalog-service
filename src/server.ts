@@ -5,7 +5,7 @@ import logger from "./logger";
 
 const startserver = async () => {
   const PORT = config.get("server.port") || 5502;
-  console.log(PORT);
+  
 
   try {
     await initDb();

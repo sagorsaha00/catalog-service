@@ -5,6 +5,8 @@ server:
 database:
   url: "mongodb+srv://mrartimas24:mrartimas24@catalog-service.wuarc.mongodb.net/catalog_service?retryWrites=true&w=majority"
 
+jwks:
+  url: "http://localhost:5500/.well-known/jwks.json"
 
 #   mongodb+srv://mrartimas24:mrartimas24@catalog-service.wuarc.mongodb.net/
 #  mongodb://root:root@localhost:27017/catalog_service?authSource=admin
