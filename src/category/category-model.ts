@@ -33,7 +33,6 @@ const AttributesSchema = new mongoose.Schema<Attributes>({
 });
 
 export const CategorySchema = new mongoose.Schema<Category>({
-   
   name: {
     type: String,
     required: true,
@@ -48,5 +47,5 @@ export const CategorySchema = new mongoose.Schema<Category>({
     required: true,
   },
 });
-const CategoryModel = mongoose.model('Category', CategorySchema);
-export default CategoryModel
+const CategoryModel = mongoose.model("Category", CategorySchema);
+export default CategoryModel;
