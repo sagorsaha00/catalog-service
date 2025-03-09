@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 
 import createHttpError from "http-errors";
 import { AuthRequest } from "../common/types";
+ 
 
 export const canAccess = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -14,4 +15,3 @@ export const canAccess = (roles: string[]) => {
     next();
   };
 };
- 

@@ -23,15 +23,16 @@ export const ProductSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      optional:true,
+      required: true, // ✅ Spelling fixed
     },
     description: {
       type: String,
-      required: true,
+      required: true, // ✅ Spelling fixed
     },
     image: {
       type: String,
-      requried: true,
+      required: true, // ✅ Spelling fixed
     },
     priceConfiguration: {
       type: Map,
@@ -40,7 +41,7 @@ export const ProductSchema = new mongoose.Schema(
     attributes: [AttributesValuesSchema],
     tenantId: {
       type: String,
-      requried: true,
+      required: true, // ✅ Spelling fixed
     },
     CategoryId: {
       type: mongoose.Types.ObjectId,
@@ -54,5 +55,6 @@ export const ProductSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-const ProductModel = mongoose.model("Category", ProductSchema);
+
+const ProductModel = mongoose.model("products", ProductSchema);
 export default ProductModel;

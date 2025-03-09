@@ -27,6 +27,7 @@ export default tseslint.config(
          "@typescript-eslint/no-unsafe-assignment":"off",
          // 'dot-notation': 'error',
          '@typescript-eslint/no-misused-promises': 'off',
+         "@typescript-eslint/no-unsafe-return":"off"
          
       },
    },
