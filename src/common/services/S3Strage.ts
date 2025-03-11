@@ -1,6 +1,10 @@
 import config from 'config'
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
- 
+import {
+   S3Client,
+   PutObjectCommand,
+   DeleteObjectCommand,
+} from '@aws-sdk/client-s3'
+
 import { FileData, FileStorage } from '../types/storage'
 export class S3Stroage implements FileStorage {
    private client: S3Client
@@ -20,7 +24,7 @@ export class S3Stroage implements FileStorage {
       })
    }
 
-   getObjectUrl(filename: string): string {
+   async getObjectUrl(filename: string): Promise<void> {
       throw new Error('Method not implemented.')
    }
    async upload(data: FileData): Promise<void> {
@@ -28,14 +32,18 @@ export class S3Stroage implements FileStorage {
          Bucket: config.get('s3.bucket'),
          Key: data.filename,
          Body: data.filedata,
-        
       }
 
-      console.log('object-params name', objectParams)
       //@ts-ignore
-      await this.client.send(new PutObjectCommand(objectParams))
-      console.log('all ok success')
+      return await this.client.send(new PutObjectCommand(objectParams))
    }
 
-   delete(filename: string): void {}
+   async delete(filename: string): Promise<void> {
+      const objectParams = {
+         Bucket: config.get('s3.bucket') as string,
+         Key: filename,
+      }
+
+      await this.client.send(new DeleteObjectCommand(objectParams))
+   }
 }

@@ -1,22 +1,21 @@
 server:
-  port: 5502
-  host: localhost
+   port: 5502
+   host: localhost
 
 database:
-  url: "mongodb+srv://mrartimas24:mrartimas24@catalog-service.wuarc.mongodb.net/catalog_service?retryWrites=true&w=majority"
+   url: 'mongodb+srv://mrartimas24:mrartimas24@catalog-service.wuarc.mongodb.net/catalog_service?retryWrites=true&w=majority'
 
 jwks:
-  url: "http://localhost:5500/.well-known/jwks.json"
+   url: 'http://localhost:5500/.well-known/jwks.json'
+
+# s3:
+#   region: eu-north-1
+#   bucket: mernspase-project
+#   accesskey: AKIARSU7K7WCF5FXE2XP
+#   secretkey: 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
 
 s3:
-  region: eu-north-1
-  bucket: mernspase-project
-  accesskey: AKIARSU7K7WCF5FXE2XP
-  secretkey: 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
-
- 
- 
-
- 
-
- 
+   region: eu-north-1
+   bucket: mernspace-test-project
+   accesskey: AKIARSU7K7WCIXIIVEUN
+   secretkey: 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
