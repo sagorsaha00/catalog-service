@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { body, validationResult } from 'express-validator'
 import createHttpError from 'http-errors'
-import { products } from './products-types'
+import { Filter, products } from './products-types'
 import { Productservice } from './product-service'
 import { FileStorage } from '../common/types/storage'
 import config from 'config'
@@ -174,5 +174,25 @@ export class productController {
          console.error('Error in update function:', error)
          next(createHttpError(500, 'Internal Server Error'))
       }
+   }
+   index = async (request: Request, res: Response, next: NextFunction) => {
+      const { q, tenantId, CategoryId, isPublish } = request.query
+      console.log('all data', tenantId, CategoryId, isPublish)
+      console.log('q',q);
+      const filters: Filter = {}
+      if (isPublish == 'true') {
+         filters.isPublish = true
+      }
+
+      if (tenantId) filters.tenantId = tenantId as string
+
+      if (CategoryId && mongoose.Types.ObjectId.isValid(CategoryId as string)) {
+         filters.CategoryId = new mongoose.Types.ObjectId(CategoryId as string)
+      }
+
+      const products =await this.productservice.getProducts(q as string,filters)
+      console.log('products',products);
+
+      res.json(products)
    }
 }

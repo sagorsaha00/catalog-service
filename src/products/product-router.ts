@@ -48,4 +48,5 @@ router.put(
    updateProductValidator,
    ProductController.update,
 )
+router.get('/',  ProductController.index)
 export default router
