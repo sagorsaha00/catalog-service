@@ -24,7 +24,13 @@ export class S3Stroage implements FileStorage {
       })
    }
 
-   async getObjectUrl(filename: string): Promise<void> {
+   async getImageUrl(filename: string): Promise<string> {
+    
+      const bucket = config.get('s3.bucket')
+      const region = config.get('s3.region')
+      if (typeof bucket === 'string' && typeof region === 'string') {
+         return `https://${bucket}.s3.${region}.amazonaws.com/${filename}`
+      }
       throw new Error('Method not implemented.')
    }
    async upload(data: FileData): Promise<void> {

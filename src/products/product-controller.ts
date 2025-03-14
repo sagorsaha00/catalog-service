@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { body, validationResult } from 'express-validator'
+import { validationResult } from 'express-validator'
 import createHttpError from 'http-errors'
 import { Filter, products } from './products-types'
 import { Productservice } from './product-service'
@@ -86,6 +86,7 @@ export class productController {
          }
 
          const productId = request.params.productId?.trim()
+         console.log('productId', productId)
 
          if (!productId) {
             return next(createHttpError(400, 'Product ID is required'))
@@ -96,6 +97,7 @@ export class productController {
          }
 
          const objectId2 = new mongoose.Types.ObjectId(productId)
+         console.log('obejctId', objectId2)
 
          const fortennatproductId =
             await this.productservice.getProductId(productId)
@@ -178,7 +180,7 @@ export class productController {
    index = async (request: Request, res: Response, next: NextFunction) => {
       const { q, tenantId, CategoryId, isPublish } = request.query
       console.log('all data', tenantId, CategoryId, isPublish)
-      console.log('q',q);
+      console.log('q', q)
       const filters: Filter = {}
       if (isPublish == 'true') {
          filters.isPublish = true
@@ -190,9 +192,102 @@ export class productController {
          filters.CategoryId = new mongoose.Types.ObjectId(CategoryId as string)
       }
 
-      const products =await this.productservice.getProducts(q as string,filters)
-      console.log('products',products);
+      const products = await this.productservice.getProducts(
+         q as string,
+         filters,
+         {
+            page: request.query.page
+               ? parseInt(request.query.page as string)
+               : 1,
+            limit: request.query.limit
+               ? parseInt(request.query.page as string)
+               : 10,
+         },
+      )
 
-      res.json(products)
+      if (!products) {
+         console.error('products is undefined or null')
+         return []
+      }
+
+      const finalProducts = (products.Data as products[]).map(
+         (product: products) => {
+            return {
+               ...product,
+               image: this.stroage.getImageUrl(product.image),
+            }
+         },
+      )
+
+      res.json({
+         totalDocs: finalProducts,
+         docs: products.data,
+         limit: products.limit,
+         page: products.page,
+      })
+   }
+   GetSingleProduct = async (
+      request: Request,
+      res: Response,
+      next: NextFunction,
+   ) => {
+      try {
+         const { productId } = request.params
+         console.log('Received productId:', productId)
+
+         if (!productId) {
+            throw createHttpError(400, 'Product ID Not Found')
+         }
+
+         if (!mongoose.Types.ObjectId.isValid(productId)) {
+            throw createHttpError(400, 'Invalid Product ID format')
+         }
+
+         const product = await this.productservice.getSingleProduct(productId)
+         console.log('product', product)
+         if (!product) {
+            throw createHttpError(404, 'Product not found')
+         }
+
+         res.json(product)
+      } catch (error) {
+         next(error)
+      }
+   }
+   deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+      try {
+         const { productId } = req.params
+
+         if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return next(createHttpError(400, 'Invalid Product ID format'))
+         }
+
+         const productImageId = await this.productservice.getProductImageId(
+            productId as unknown as mongoose.Types.ObjectId,
+         )
+         console.log('productImageId', productImageId)
+         if (!productImageId) {
+            console.log(`No product found with ID: ${productId}`)
+            return null
+         }
+
+         const imageUrl = productImageId.toString()
+         if (!imageUrl) {
+            console.warn(`No image found for product ${productId}`)
+         } else {
+            const imageKey = imageUrl.split('/').pop()
+            console.log('imageky', imageKey)
+            await this.stroage.delete(imageKey as string)
+            console.log(`Deleted image from S3: ${imageKey}`)
+         }
+
+         await this.productservice.DeleteObject(productId)
+         res.status(200).json({
+            message: 'Product and image deleted successfully',
+         })
+      } catch (error) {
+         console.error('Error deleting product:', error)
+         next(createHttpError(500, 'Internal Server Error'))
+      }
    }
 }

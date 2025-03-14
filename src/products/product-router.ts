@@ -49,4 +49,7 @@ router.put(
    ProductController.update,
 )
 router.get('/',  ProductController.index)
+router.get('/:productId',  ProductController.GetSingleProduct)
+router.delete('/:productId',  ProductController.deleteProduct)
+
 export default router

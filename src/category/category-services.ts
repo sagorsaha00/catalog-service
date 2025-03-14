@@ -46,7 +46,7 @@ export class CategoryService {
         throw new Error("Failed to update category");
       }
 
-      console.log("Updated Category:", updatedCategory);
+       
       return updatedCategory;
     } catch (error) {
       console.error("Error updating category:", error);

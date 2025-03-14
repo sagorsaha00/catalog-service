@@ -10,3 +10,8 @@ export interface AuthRequest extends Request {
     tenant:string
   };
 }
+
+export interface PaginateQurytypes{
+  page:number
+  limit:number
+}

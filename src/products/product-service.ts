@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import ProductModel from './product-model'
 import { Filter, products } from './products-types'
+import { PaginateQurytypes } from '../common/types'
+import { paginationLabels } from '../config/pagination'
 
 export class Productservice {
    async create(product: products) {
@@ -46,10 +48,16 @@ export class Productservice {
       }
    }
    async getProductId(productId: string): Promise<{ tenantId: string } | null> {
-      return await ProductModel.findById(productId)
+      const getProductId = await ProductModel.findById(productId)
+      console.log('getProductId', getProductId)
+      return getProductId
    }
 
-   async getProducts(q: string, filters: Filter) {
+   async getProducts(
+      q: string,
+      filters: Filter,
+      paginatequry: PaginateQurytypes,
+   ) {
       const searchQueryRegex = new RegExp(q, 'i')
 
       const matchQuery = {
@@ -78,12 +86,24 @@ export class Productservice {
             },
          },
          {
-            $unwind:'$category'
-         }
+            $unwind: '$category',
+         },
       ])
 
-      const result = await aggregate.exec()
+      return ProductModel.aggregatePaginate(aggregate, {
+         ...paginatequry,
+         customLabels: paginationLabels,
+      })
+   }
 
-      return result as products[]
+   async getSingleProduct(productId: string) {
+      const SingleproductId = await ProductModel.findById(productId)
+      return SingleproductId
+   }
+   async DeleteObject(productId: string) {
+      console.log('Received productId:', productId)
+      const deleteProduct = await ProductModel.findByIdAndDelete(productId)
+      console.log('deleteProduct:', deleteProduct)
+      return deleteProduct
    }
 }
