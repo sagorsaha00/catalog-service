@@ -10,6 +10,7 @@ import { UploadedFile } from 'express-fileupload'
 import mongoose from 'mongoose'
 import { AuthRequest } from '../common/types'
 import { ROLES } from '../common/constant'
+import ProductModel from './product-model'
 export class productController {
    constructor(
       private productservice: Productservice,
@@ -17,13 +18,21 @@ export class productController {
    ) {}
 
    create = async (req: Request, res: Response, next: NextFunction) => {
+      console.log(req.body) // Log incoming request body for debugging
       try {
          const result = validationResult(req)
 
+         // Check if file is uploaded
+         if (!req.files || !req.files.image) {
+            throw new Error('No image file uploaded!')
+         }
+
+         // Check if S3 bucket config is missing
          if (!config.get('s3.bucket')) {
             throw new Error('S3 Bucket name is missing! Check your config.')
          }
 
+         // Validation errors
          if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string))
          }
@@ -38,28 +47,59 @@ export class productController {
             isPublish,
          } = req.body
 
+         // Ensure `priceConfiguration` and `attributes` are valid JSON strings
+         let parsedPriceConfig: any = priceConfiguration
+         let parsedAttributes: any = attributes
+
+         try {
+            // Ensure priceConfiguration is a valid JSON object if it's a string
+            if (typeof priceConfiguration === 'string') {
+               try {
+                  parsedPriceConfig = JSON.parse(priceConfiguration.trim())
+               } catch (error) {
+                  return next(
+                     createHttpError(
+                        400,
+                        'Invalid JSON format in priceConfiguration.',
+                     ),
+                  )
+               }
+            }
+
+            // Ensure attributes is a valid JSON object if it's a string
+            if (typeof attributes === 'string') {
+               try {
+                  parsedAttributes = JSON.parse(attributes.trim())
+               } catch (error) {
+                  return next(
+                     createHttpError(400, 'Invalid JSON format in attributes.'),
+                  )
+               }
+            }
+
+            // Proceed with the rest of your logic...
+         } catch (error) {
+            return next(createHttpError(400, 'Invalid error format'))
+         }
+
+         // Handle the uploaded image
          const image = req.files!.image as UploadedFile
-         // console.log('image', image)
+         console.log(image)
+
          const imagename = uuidv4()
          const buffer = Buffer.from(image.data.buffer)
 
+         // Upload to S3 or your storage service
          await this.stroage.upload({
             filename: imagename,
             filedata: buffer.buffer as ArrayBuffer,
          })
-         // ✅ Convert string to object only if needed
-         const parsedPriceConfig =
-            typeof priceConfiguration === 'string'
-               ? JSON.parse(priceConfiguration)
-               : priceConfiguration
 
-         const parsedAttributes =
-            typeof attributes === 'string' ? JSON.parse(attributes) : attributes
-
+         // Prepare the product object
          const product = {
             name,
             description,
-            priceConfiguration: parsedPriceConfig, // ✅ Now it's an object
+            priceConfiguration: parsedPriceConfig,
             attributes: parsedAttributes,
             CategoryId,
             tenantId,
@@ -67,14 +107,18 @@ export class productController {
             isPublish,
          }
 
+         console.log('product', product)
+
+         // Create the product in the database
          const newProduct = await this.productservice.create(
             product as products,
          )
 
+         // Return the created product ID
          return res.json({ id: newProduct._id })
       } catch (error) {
          console.error('Error error error ', error)
-         return next(createHttpError(400, 'Invalid  error format'))
+         return next(createHttpError(400, 'Invalid error format'))
       }
    }
 
@@ -179,8 +223,7 @@ export class productController {
    }
    index = async (request: Request, res: Response, next: NextFunction) => {
       const { q, tenantId, CategoryId, isPublish } = request.query
-      console.log('all data', tenantId, CategoryId, isPublish)
-      console.log('q', q)
+
       const filters: Filter = {}
       if (isPublish == 'true') {
          filters.isPublish = true
@@ -204,27 +247,45 @@ export class productController {
                : 10,
          },
       )
+      console.log('filter', filters)
+      const products2 = await this.productservice.getProducts(
+         q as string,
+         filters,
+         {
+            page: request.query.page
+               ? parseInt(request.query.page as string)
+               : 1,
+            limit: request.query.limit
+               ? parseInt(request.query.limit as string)
+               : 10,
+         },
+      )
+
+      console.log('Raw Products from Service:', products2)
+      // const productstest = await ProductModel.find()
+      // console.log('All Products:', productstest)
 
       if (!products) {
          console.error('products is undefined or null')
          return []
       }
 
-      const finalProducts = (products.Data as products[]).map(
-         (product: products) => {
+      const finalProducts = await Promise.all(
+         (products.Data as products[]).map(async (product: products) => {
             return {
                ...product,
-               image: this.stroage.getImageUrl(product.image),
+               image: await this.stroage.getImageUrl(product.image),
             }
-         },
+         }),
       )
 
       res.json({
          totalDocs: finalProducts,
+         image: finalProducts.length > 0 ? finalProducts[0].image : null,
          docs: products.data,
          limit: products.limit,
          page: products.page,
-      })
+       })
    }
    GetSingleProduct = async (
       request: Request,

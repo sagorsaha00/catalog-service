@@ -12,29 +12,48 @@ export class CategoryController {
       private logger: Logger,
    ) {}
    async create(request: Request, response: Response, next: NextFunction) {
-      const result = validationResult(request)
-
-      if (!result.isEmpty()) {
-         next(createHttpError(400, result.array()[0].msg as string))
-         return
-      }
-      const { name, priceConfiguration, attributes } = request.body as Category
-
-      const categorycreatedata = await this.categoryService.create({
-         name,
-         priceConfiguration,
-         attributes,
-      })
-
-      // console.log('logger',this.logger.info('data save',));
-
-      if (categorycreatedata) {
-         response.json({ id: categorycreatedata?.id })
-      } else {
-         // handle the case where categorycreatedata is undefined
-         response.status(500).json({ error: 'Failed to create category' })
+      try {
+         const { name, priceConfiguration, attributes } = request.body;
+   
+         let parsedPriceConfig: any = priceConfiguration;
+         let parsedAttributes: any = attributes;
+   
+         // If priceConfiguration or attributes are strings, parse them
+         if (typeof priceConfiguration === 'string') {
+            try {
+               parsedPriceConfig = JSON.parse(priceConfiguration);
+            } catch (error) {
+               return next(createHttpError(400, 'Invalid JSON format in priceConfiguration.'));
+            }
+         }
+   
+         if (typeof attributes === 'string') {
+            try {
+               parsedAttributes = JSON.parse(attributes);
+            } catch (error) {
+               return next(createHttpError(400, 'Invalid JSON format in attributes.'));
+            }
+         }
+   
+         // Continue with the creation process (for example, save to DB)
+         const categorycreatedata = await this.categoryService.create({
+            name,
+            priceConfiguration: parsedPriceConfig,
+            attributes: parsedAttributes,
+         });
+   
+         // Return response with the category ID
+         if (categorycreatedata) {
+            return response.json({ id: categorycreatedata?.id });
+         } else {
+            return response.status(500).json({ error: 'Failed to create category' });
+         }
+      } catch (error) {
+         console.error('Error in creating category:', error);
+         return next(createHttpError(500, 'An unexpected error occurred'));
       }
    }
+   
 
    async update(request: Request, response: Response, next: NextFunction) {
       const result = validationResult(request)
@@ -85,7 +104,6 @@ export class CategoryController {
          const objectId = new mongoose.Types.ObjectId(categoriesId)
 
          const category = await this.categoryService.findByid(objectId)
-        
 
          if (!category) {
             return next(createHttpError(404, 'Category not found'))

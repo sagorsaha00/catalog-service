@@ -12,6 +12,9 @@ const priceConfigurationSchema = new mongoose.Schema<priceConfiguration>({
     required: true,
   },
 });
+
+ 
+
 const AttributesSchema = new mongoose.Schema<Attributes>({
   name: {
     type: String,
@@ -31,6 +34,7 @@ const AttributesSchema = new mongoose.Schema<Attributes>({
     required: true,
   },
 });
+ 
 
 export const CategorySchema = new mongoose.Schema<Category>({
   name: {

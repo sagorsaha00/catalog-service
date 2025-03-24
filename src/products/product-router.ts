@@ -22,14 +22,6 @@ router.post(
    '/',
    authenticate,
    canAccess([ROLES.ADMIN, ROLES.MANAGER]),
-   fileUpload({
-      limits: { fileSize: 500 * 1024 },
-      abortOnLimit: true,
-      limitHandler: (req, res, next) => {
-         const error = createHttpError(404, 'please give a pik uder 5 mb')
-         next(error)
-      },
-   }),
    productValidator,
    ProductController.create,
 )

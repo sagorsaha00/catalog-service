@@ -53,18 +53,25 @@ export class Productservice {
       return getProductId
    }
 
-   async getProducts(
-      q: string,
-      filters: Filter,
-      paginatequry: PaginateQurytypes,
-   ) {
-      const searchQueryRegex = new RegExp(q, 'i')
-
-      const matchQuery = {
-         ...filters,
-         name: searchQueryRegex,
+   async getProducts(q: string, filters: Filter, paginatequry: PaginateQurytypes) {
+      const matchQuery: any = { ...filters };
+   
+      // Ensure search term does not break query
+      if (q) {
+         matchQuery.name = new RegExp(q, 'i');
       }
-
+   
+      // Ensure CategoryId is an ObjectId
+      if (filters.CategoryId) {
+         try {
+            matchQuery.CategoryId = new mongoose.Types.ObjectId(filters.CategoryId);
+         } catch (error) {
+            console.error('Invalid CategoryId:', filters.CategoryId);
+         }
+      }
+   
+     
+   
       const aggregate = ProductModel.aggregate([
          { $match: matchQuery },
          {
@@ -74,27 +81,19 @@ export class Productservice {
                foreignField: '_id',
                as: 'category',
                pipeline: [
-                  {
-                     $project: {
-                        _id: 1,
-                        name: 1,
-                        priceConfiguration: 1,
-                        attributes: 1,
-                     },
-                  },
+                  { $project: { _id: 1, name: 1, priceConfiguration: 1, attributes: 1 } },
                ],
             },
          },
-         {
-            $unwind: '$category',
-         },
-      ])
-
+         { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } }, // Avoid missing results
+      ]);
+   
       return ProductModel.aggregatePaginate(aggregate, {
          ...paginatequry,
          customLabels: paginationLabels,
-      })
+      });
    }
+   
 
    async getSingleProduct(productId: string) {
       const SingleproductId = await ProductModel.findById(productId)

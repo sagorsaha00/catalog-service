@@ -17,14 +17,14 @@ const toppingCntroler = new toppingController(topingService, clientstorage)
 router.post(
    '/',
    authenticate,
-   fileUpload({
-      limits: { fileSize: 500 * 1024 },
-      abortOnLimit: true,
-      limitHandler: (req, res, next) => {
-         const error = createHttpError(404, 'please give a pik uder 5 mb')
-         next(error)
-      },
-   }),
+   // fileUpload({
+   //    limits: { fileSize: 500 * 1024 },
+   //    abortOnLimit: true,
+   //    limitHandler: (req, res, next) => {
+   //       const error = createHttpError(404, 'please give a pik uder 5 mb')
+   //       next(error)
+   //    },
+   // }),
    canAccess([ROLES.MANAGER, ROLES.ADMIN]),
    createToppingValidator,
    toppingCntroler.create,
@@ -32,14 +32,14 @@ router.post(
 router.put(
    '/:toppingId',
    authenticate,
-   fileUpload({
-      limits: { fileSize: 500 * 1024 },
-      abortOnLimit: true,
-      limitHandler: (req, res, next) => {
-         const error = createHttpError(404, 'please give a pik uder 5 mb')
-         next(error)
-      },
-   }),
+   // fileUpload({
+   //    limits: { fileSize: 500 * 1024 },
+   //    abortOnLimit: true,
+   //    limitHandler: (req, res, next) => {
+   //       const error = createHttpError(404, 'please give a pik uder 5 mb')
+   //       next(error)
+   //    },
+   // }),
    canAccess([ROLES.MANAGER, ROLES.ADMIN]),
    updateToppingValidator,
    toppingCntroler.update,

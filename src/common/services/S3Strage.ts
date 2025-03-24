@@ -33,6 +33,7 @@ export class S3Stroage implements FileStorage {
       }
       throw new Error('Method not implemented.')
    }
+   
    async upload(data: FileData): Promise<void> {
       const objectParams = {
          Bucket: config.get('s3.bucket'),
