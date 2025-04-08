@@ -28,14 +28,25 @@ export class toppingController {
                createHttpError(400, 'Missing required fields from you from'),
             )
          }
+         // const image = req.files!.image as UploadedFile
+
+         // const imagename = uuidv4()
+         // const buffer = Buffer.from(image.data.buffer)
+
+         // await this.storage.upload({
+         //    filename: imagename,
+         //    filedata: buffer.buffer as ArrayBuffer,
+         // })
+
          const image = req.files!.image as UploadedFile
 
          const imagename = uuidv4()
-         const buffer = Buffer.from(image.data.buffer)
+         const buffer = Buffer.from(image.data)
 
          await this.storage.upload({
             filename: imagename,
-            filedata: buffer.buffer as ArrayBuffer,
+            filedata: buffer,
+            contentType: image.mimetype,
          })
 
          const topping = {
@@ -180,21 +191,26 @@ export class toppingController {
          return next(createHttpError(500, 'Internal Server Error'))
       }
    }
-   getAllleTopping = async (
-      req: Request,
-      res: Response,
-      next: NextFunction,
-   ) => {
+   getAllTopping = async (req: Request, res: Response, next: NextFunction) => {
       try {
-         const topping = await this.toppingService.gettoppingList()
+         const { tenantId } = req.query
 
-         if (!topping) {
-            return next(createHttpError(404, 'Topping not found'))
+         if (!tenantId || typeof tenantId !== 'string') {
+            return next(createHttpError(400, 'tenantId is required'))
          }
 
-         return res.json({ success: true, topping })
+         const toppings =
+            await this.toppingService.getToppingListByTenant(tenantId)
+
+         if (!toppings.length) {
+            return next(
+               createHttpError(404, 'No toppings found for this tenant'),
+            )
+         }
+
+         return res.json({ success: true, toppings })
       } catch (error) {
-         console.error('Error fetching topping:', error)
+         console.error('Error fetching toppings:', error)
          return next(createHttpError(500, 'Internal Server Error'))
       }
    }

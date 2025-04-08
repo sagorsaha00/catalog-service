@@ -40,7 +40,7 @@ router.get(
    '/:id',
    authenticate,
    canAccess([ROLES.ADMIN]),
-   categoryValidator,
+    
    asyncwrapper(
       async (req: Request, res: Response, next: NextFunction) =>
          await cateGoryContoller.getCategoriedId(req, res, next),
@@ -49,6 +49,16 @@ router.get(
  
 router.get(
    '/',
+   // authenticate,
+   // canAccess([ROLES.ADMIN]),
+   categoryValidator,
+   asyncwrapper(
+      async (req: Request, res: Response, next: NextFunction) =>
+         await cateGoryContoller.getAllCategories(req, res, next),
+   )
+)
+router.get(
+   '/:id',
    authenticate,
    canAccess([ROLES.ADMIN]),
    categoryValidator,

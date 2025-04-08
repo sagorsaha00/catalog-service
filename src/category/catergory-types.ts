@@ -11,7 +11,9 @@ export interface Attributes {
   availableOptions: string[];
 }
 export interface Category {
+  _id:string;
   name: string;
   priceConfiguration: priceConfiguration;
   attributes: Attributes[];
 }
+ 

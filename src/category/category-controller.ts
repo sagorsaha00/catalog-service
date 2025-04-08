@@ -13,47 +13,56 @@ export class CategoryController {
    ) {}
    async create(request: Request, response: Response, next: NextFunction) {
       try {
-         const { name, priceConfiguration, attributes } = request.body;
-   
-         let parsedPriceConfig: any = priceConfiguration;
-         let parsedAttributes: any = attributes;
-   
+         const { name, priceConfiguration, attributes } = request.body
+
+         let parsedPriceConfig: any = priceConfiguration
+         let parsedAttributes: any = attributes
+
          // If priceConfiguration or attributes are strings, parse them
          if (typeof priceConfiguration === 'string') {
             try {
-               parsedPriceConfig = JSON.parse(priceConfiguration);
+               parsedPriceConfig = JSON.parse(priceConfiguration)
             } catch (error) {
-               return next(createHttpError(400, 'Invalid JSON format in priceConfiguration.'));
+               return next(
+                  createHttpError(
+                     400,
+                     'Invalid JSON format in priceConfiguration.',
+                  ),
+               )
             }
          }
-   
+
          if (typeof attributes === 'string') {
             try {
-               parsedAttributes = JSON.parse(attributes);
+               parsedAttributes = JSON.parse(attributes)
             } catch (error) {
-               return next(createHttpError(400, 'Invalid JSON format in attributes.'));
+               return next(
+                  createHttpError(400, 'Invalid JSON format in attributes.'),
+               )
             }
          }
-   
+
          // Continue with the creation process (for example, save to DB)
          const categorycreatedata = await this.categoryService.create({
+            _id: new mongoose.Types.ObjectId().toString(),
             name,
             priceConfiguration: parsedPriceConfig,
             attributes: parsedAttributes,
-         });
-   
+         } as Category)
+
          // Return response with the category ID
          if (categorycreatedata) {
-            return response.json({ id: categorycreatedata?.id });
+            return response.json({ id: categorycreatedata?.id })
          } else {
-            return response.status(500).json({ error: 'Failed to create category' });
+            return response
+               .status(500)
+               .json({ error: 'Failed to create category' })
          }
       } catch (error) {
-         console.error('Error in creating category:', error);
-         return next(createHttpError(500, 'An unexpected error occurred'));
+         console.error('Error in creating category:', error)
+         return next(createHttpError(500, 'An unexpected error occurred'))
       }
    }
-   
 
    async update(request: Request, response: Response, next: NextFunction) {
       const result = validationResult(request)
@@ -68,6 +77,7 @@ export class CategoryController {
       const { name, priceConfiguration, attributes } = request.body as Category
       const objectId = new mongoose.Types.ObjectId(catagoriesId)
       await this.categoryService.update(objectId, {
+         _id: objectId.toString(),
          name,
          priceConfiguration,
          attributes,
@@ -100,7 +110,6 @@ export class CategoryController {
       }
 
       try {
-         // ✅ Convert to ObjectId safely
          const objectId = new mongoose.Types.ObjectId(categoriesId)
 
          const category = await this.categoryService.findByid(objectId)
@@ -159,5 +168,24 @@ export class CategoryController {
       return response
          .status(200)
          .json({ message: 'delete successfully', id: catagoriesId })
+   }
+   async getCategoryById(
+      request: Request,
+      response: Response,
+      next: NextFunction,
+   ) {
+      try {
+         const categoryId = request.params.id?.trim()
+         const category = await this.categoryService.findByid(
+            new mongoose.Types.ObjectId(categoryId),
+         )
+
+         return response.status(200).json({
+            category,
+         })
+      } catch (error) {
+         console.error('Error fetching category:', error)
+         return next(createHttpError(500, 'Server error'))
+      }
    }
 }

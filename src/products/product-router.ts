@@ -11,6 +11,7 @@ import {} from '../common/types/storage'
 import { S3Stroage } from '../common/services/S3Strage'
 import createHttpError from 'http-errors'
 import updateProductValidator from './update-product-validator'
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 
 const router = express.Router()
 const productservice = new Productservice()
@@ -43,5 +44,5 @@ router.put(
 router.get('/',  ProductController.index)
 router.get('/:productId',  ProductController.GetSingleProduct)
 router.delete('/:productId',  ProductController.deleteProduct)
-
+ 
 export default router

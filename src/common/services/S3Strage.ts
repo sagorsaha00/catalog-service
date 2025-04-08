@@ -35,15 +35,24 @@ export class S3Stroage implements FileStorage {
    }
    
    async upload(data: FileData): Promise<void> {
-      const objectParams = {
-         Bucket: config.get('s3.bucket'),
-         Key: data.filename,
-         Body: data.filedata,
+     
+      if (!data.filedata || data.filedata.byteLength === 0) {
+        console.error('ফাইল ডাটা খালি!');
+        throw new Error('ফাইল ডাটা খালি!');
       }
-
+      
+      console.log('আপলোড করার ফাইল সাইজ:', data.filedata.byteLength, 'bytes');
+      
+      const objectParams = {
+        Bucket: config.get('s3.bucket'),
+        Key: data.filename,
+        Body: data.filedata,
+        ContentType: data.contentType || 'image/jpeg',
+      }
+      
       //@ts-ignore
       return await this.client.send(new PutObjectCommand(objectParams))
-   }
+    }
 
    async delete(filename: string): Promise<void> {
       const objectParams = {

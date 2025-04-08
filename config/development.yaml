@@ -1,9 +1,9 @@
 server:
-   port: 3000
+   port: 3001
    host: localhost
 
 database:
-   url: 'mongodb+srv://mrartimas24:mrartimas24@catalog-service.wuarc.mongodb.net/catalog_service?retryWrites=true&w=majority'
+   url: 'mongodb+srv://mrartimas24:mrartimas24@catalog-service.wuarc.mongodb.net/catalog_service?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidCertificates=true'
 
 jwks:
    url: 'http://localhost:5500/.well-known/jwks.json'

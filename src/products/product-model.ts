@@ -37,17 +37,39 @@ const OptionSchema = new mongoose.Schema(
    { _id: false }, // Prevents auto-generating `_id` for each option
 )
 
-const PriceConfigurationSchema = new mongoose.Schema(
-   {
-      configurationKey: {
-         type: Map,
-         of: OptionSchema, // ✅ Supports dynamic keys like "Size" and "Crust"
-         required: true, // ✅ Ensures configurationKey is always present
-         default: {}, // ✅ Prevents missing field errors
+// const PriceConfigurationSchema = new mongoose.Schema(
+//    {
+//       configurationKey: {
+//          type: Map,
+//          of: OptionSchema, // ✅ Supports dynamic keys like "Size" and "Crust"
+//          required: true, // ✅ Ensures configurationKey is always present
+//          default: {}, // ✅ Prevents missing field errors
+//       },
+//    },
+//    { timestamps: true },
+// )
+
+   // const PriceOptionSchema = new mongoose.Schema({
+   //    option: { type: String, required: true }, // e.g., "Small", "Medium", "Large"
+   //    price: { type: Number, required: true }, // Price for each option
+   //  });
+    
+    const PriceCategorySchema = new mongoose.Schema({
+      priceType: { type: String, required: true }, // e.g., "base", "additional"
+      availableOptions: { type: Map, of: Number, required: true }, 
+      // Example: { "Small": 400, "Medium": 600, "Large": 800 }
+    });
+    
+    const PriceConfigurationSchema = new mongoose.Schema({
+      priceConfiguration: {
+        configurationKey: {
+          type: Map,
+          of: PriceCategorySchema,
+          required: true,
+        },
       },
-   },
-   { timestamps: true },
-)
+    })
+ 
 
 export const ProductSchema = new mongoose.Schema(
    {
@@ -64,10 +86,7 @@ export const ProductSchema = new mongoose.Schema(
          type: String,
          required: true,
       },
-      priceConfiguration: {
-         type: Map,
-         of: PriceConfigurationSchema,
-      },
+      priceConfiguration: { type: PriceConfigurationSchema, required: true },
       attributes: [AttributesValuesSchema],
       tenantId: {
          type: String,

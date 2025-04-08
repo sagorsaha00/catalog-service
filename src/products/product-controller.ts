@@ -82,17 +82,29 @@ export class productController {
             return next(createHttpError(400, 'Invalid error format'))
          }
 
-         // Handle the uploaded image
+         // const image = req.files!.image as UploadedFile
+         // console.log('image', image)
+         // if (!image || !image.data || image.data.length === 0) {
+         //    throw new Error('ইমেজ ডাটা খালি! সঠিক ফাইল আপলোড করুন।')
+         // }
+         // const imagename = uuidv4()
+         // const buffer = Buffer.from(image.data.buffer)
+
+         // // Upload to S3 or your storage service
+         // await this.stroage.upload({
+         //    filename: imagename,
+         //    filedata: buffer.buffer as ArrayBuffer,
+         //    contentType: image.mimetype,
+         // })
          const image = req.files!.image as UploadedFile
-         console.log(image)
-
+                   
          const imagename = uuidv4()
-         const buffer = Buffer.from(image.data.buffer)
+         const buffer = Buffer.from(image.data)  
 
-         // Upload to S3 or your storage service
          await this.stroage.upload({
             filename: imagename,
-            filedata: buffer.buffer as ArrayBuffer,
+            filedata: buffer, 
+            contentType: image.mimetype,
          })
 
          // Prepare the product object
@@ -106,8 +118,6 @@ export class productController {
             image: imagename,
             isPublish,
          }
-
-         console.log('product', product)
 
          // Create the product in the database
          const newProduct = await this.productservice.create(
@@ -285,7 +295,7 @@ export class productController {
          docs: products.data,
          limit: products.limit,
          page: products.page,
-       })
+      })
    }
    GetSingleProduct = async (
       request: Request,

@@ -1,3 +1,4 @@
+import { AuthRequest } from './../common/types/index';
 import mongoose from 'mongoose'
 import { Toppings } from './topping-types'
 import ToppingModel from './toppings-model'
@@ -50,13 +51,13 @@ export class toppingService {
       return deleteProduct
    }
    async gettoppingId(toppingId: string) {
+      
       const getToppingId = await ToppingModel.findById(toppingId)
 
       return getToppingId
    }
-   async gettoppingList() {
-      const getToppingId = await ToppingModel.find()
-
-      return getToppingId
-   }
+   async getToppingListByTenant(tenantId: string) {
+      return await ToppingModel.find({ tenantId });
+    }
+    
 }

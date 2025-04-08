@@ -51,6 +51,6 @@ router.delete(
    toppingCntroler.deleteTopping,
 )
 router.get('/:toppingId', toppingCntroler.getSingleTopping)
-router.get('/', toppingCntroler.getAllleTopping)
+router.get('/', toppingCntroler.getAllTopping)
 
 export default router
