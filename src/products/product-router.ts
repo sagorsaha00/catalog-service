@@ -5,19 +5,22 @@ import { productController } from './product-controller'
 import authenticate from '../common/midderware/authenticate'
 import { ROLES } from '../common/constant'
 import { canAccess } from '../category/canAccess'
-import { asyncwrapper } from '../common/utils/wrapper'
 import { Productservice } from './product-service'
 import {} from '../common/types/storage'
 import { S3Stroage } from '../common/services/S3Strage'
 import createHttpError from 'http-errors'
 import updateProductValidator from './update-product-validator'
-import { GetObjectCommand } from '@aws-sdk/client-s3'
+import { createBrockerFactory } from '../factoreis/brokerFactory'
 
 const router = express.Router()
 const productservice = new Productservice()
 const s3storage = new S3Stroage()
-
-const ProductController = new productController(productservice, s3storage)
+const broker = createBrockerFactory()
+const ProductController = new productController(
+   productservice,
+   s3storage,
+   broker,
+)
 
 router.post(
    '/',
@@ -41,8 +44,8 @@ router.put(
    updateProductValidator,
    ProductController.update,
 )
-router.get('/',  ProductController.index)
-router.get('/:productId',  ProductController.GetSingleProduct)
-router.delete('/:productId',  ProductController.deleteProduct)
- 
+router.get('/', ProductController.index)
+router.get('/:productId', ProductController.GetSingleProduct)
+router.delete('/:productId', ProductController.deleteProduct)
+
 export default router

@@ -11,14 +11,17 @@ import mongoose from 'mongoose'
 import { AuthRequest } from '../common/types'
 import { ROLES } from '../common/constant'
 import ProductModel from './product-model'
+import { SendMessageProducer } from '../common/types/broker'
+
 export class productController {
    constructor(
       private productservice: Productservice,
       private stroage: FileStorage,
+      private broker: SendMessageProducer,
    ) {}
 
    create = async (req: Request, res: Response, next: NextFunction) => {
-      console.log(req.body) // Log incoming request body for debugging
+       
       try {
          const result = validationResult(req)
 
@@ -82,28 +85,14 @@ export class productController {
             return next(createHttpError(400, 'Invalid error format'))
          }
 
-         // const image = req.files!.image as UploadedFile
-         // console.log('image', image)
-         // if (!image || !image.data || image.data.length === 0) {
-         //    throw new Error('ইমেজ ডাটা খালি! সঠিক ফাইল আপলোড করুন।')
-         // }
-         // const imagename = uuidv4()
-         // const buffer = Buffer.from(image.data.buffer)
-
-         // // Upload to S3 or your storage service
-         // await this.stroage.upload({
-         //    filename: imagename,
-         //    filedata: buffer.buffer as ArrayBuffer,
-         //    contentType: image.mimetype,
-         // })
          const image = req.files!.image as UploadedFile
-                   
+
          const imagename = uuidv4()
-         const buffer = Buffer.from(image.data)  
+         const buffer = Buffer.from(image.data)
 
          await this.stroage.upload({
             filename: imagename,
-            filedata: buffer, 
+            filedata: buffer,
             contentType: image.mimetype,
          })
 
@@ -123,8 +112,15 @@ export class productController {
          const newProduct = await this.productservice.create(
             product as products,
          )
-
+      
          // Return the created product ID
+         await this.broker.sendMessage(
+            'product',
+            JSON.stringify({
+               id: newProduct._id,
+               priceConfiguration: newProduct.priceConfiguration,
+            }),
+         )
          return res.json({ id: newProduct._id })
       } catch (error) {
          console.error('Error error error ', error)
@@ -140,7 +136,7 @@ export class productController {
          }
 
          const productId = request.params.productId?.trim()
-         console.log('productId', productId)
+      
 
          if (!productId) {
             return next(createHttpError(400, 'Product ID is required'))
@@ -151,7 +147,7 @@ export class productController {
          }
 
          const objectId2 = new mongoose.Types.ObjectId(productId)
-         console.log('obejctId', objectId2)
+         
 
          const fortennatproductId =
             await this.productservice.getProductId(productId)
@@ -223,8 +219,17 @@ export class productController {
             isPublish,
          }
 
-         await this.productservice.update(objectId2, product)
-
+         const updateproduct = await this.productservice.update(
+            objectId2,
+            product,
+         )
+         await this.broker.sendMessage(
+            'product',
+            JSON.stringify({
+               id: updateproduct?._id,
+               priceConfiguration: updateproduct?.priceConfiguration,
+            }),
+         )
          res.json({ message: 'Product updated successfully', id: productId })
       } catch (error) {
          console.error('Error in update function:', error)
@@ -347,9 +352,9 @@ export class productController {
             console.warn(`No image found for product ${productId}`)
          } else {
             const imageKey = imageUrl.split('/').pop()
-            console.log('imageky', imageKey)
+      
             await this.stroage.delete(imageKey as string)
-            console.log(`Deleted image from S3: ${imageKey}`)
+          
          }
 
          await this.productservice.DeleteObject(productId)

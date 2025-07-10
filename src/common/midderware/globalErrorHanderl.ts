@@ -8,7 +8,7 @@ export const globalErrorHandler = (
   err: HttpError,
   req: Request,
   res: Response,
-  next: NextFunction // ✅ Required for Express error-handling middleware
+  next: NextFunction 
 ) => {
   const errorId = uuidv4();
   const statusCode = Number(err.statusCode) || 500;

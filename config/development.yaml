@@ -19,3 +19,8 @@ s3:
    bucket: mernspace-test-project
    accesskey: AKIARSU7K7WCIXIIVEUN
    secretkey: 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
+
+   kafka:
+   broker: localhost:9092
+
+

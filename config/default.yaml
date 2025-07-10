@@ -1,3 +1,6 @@
 server:
   port: 3001
   host: localhost
+
+kafka:
+  broker: localhost:9092

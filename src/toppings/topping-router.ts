@@ -9,11 +9,17 @@ import { canAccess } from '../category/canAccess'
 import { ROLES } from '../common/constant'
 import fileUpload from 'express-fileupload'
 import createHttpError from 'http-errors'
+import { createBrockerFactory } from '../factoreis/brokerFactory'
 
 const router = express.Router()
 const topingService = new toppingService()
 const clientstorage = new S3Stroage()
-const toppingCntroler = new toppingController(topingService, clientstorage)
+const broker = createBrockerFactory()
+const toppingCntroler = new toppingController(
+   topingService,
+   clientstorage,
+   broker,
+)
 router.post(
    '/',
    authenticate,

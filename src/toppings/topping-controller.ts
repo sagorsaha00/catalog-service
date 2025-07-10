@@ -7,10 +7,13 @@ import { Toppings } from './topping-types'
 import { v4 as uuidv4 } from 'uuid'
 import { Request, Response, NextFunction } from 'express'
 import mongoose from 'mongoose'
+import { SendMessageProducer } from '../common/types/broker'
+import logger from '../logger'
 export class toppingController {
    constructor(
       private toppingService: toppingService,
       private storage: FileStorage,
+      private broker: SendMessageProducer,
    ) {}
 
    create = async (req: Request, res: Response, next: NextFunction) => {
@@ -64,7 +67,10 @@ export class toppingController {
             console.error('Database Error:', dbError)
             return next(createHttpError(500, 'Failed to create topping'))
          }
-
+         this.broker.sendMessage(
+            'topping',
+            JSON.stringify({ id: newTopping._id, price: newTopping.price }),
+         )
          return res.json({ ['topping create']: newTopping._id })
       } catch (error) {
          console.error('Error:', error)
@@ -125,8 +131,18 @@ export class toppingController {
             isPublish,
          }
 
-         await this.toppingService.update(objectId2, updatetopping)
+         const updateTopping = await this.toppingService.update(
+            objectId2,
+            updatetopping,
+         )
 
+         this.broker.sendMessage(
+            'topping',
+            JSON.stringify({
+               id: updateTopping._id,
+               price: updateTopping.price,
+            }),
+         )
          res.json({ message: 'Topping updated successfully', _id: toppingId })
       } catch (error) {
          console.error('Error in update function:', error)
